@@ -102,7 +102,7 @@ data['PTRATIO'].median()
 # those values compare to the overall ranges for those predictors?
 low_val = data['MDEV'].nsmallest(1)
 # 398
-tract = pd.DataFrame(data.iloc[398])
+tract = pd.DataFrame(data.iloc[low_val])
 
 # CRIM        38.3518
 # ZN           0.0000
