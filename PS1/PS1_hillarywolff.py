@@ -45,12 +45,12 @@ import numpy as np
 #  LSTAT    % lower status of the population
 #  MEDV     Median value of owner-occupied homes in $1000's
 
-
+ 
 def read_data(fname):
     df = pd.read_csv(os.path.join(PATH, fname)) 
     return df
 
-PATH = r"/Users/hillarywolff/Documents/GitHub/machine_learning/Boston"
+PATH = r"/Users/hillarywolff/Documents/GitHub/machine_learning/PS1/Boston"
 fname = 'Boston.csv'
 
 
