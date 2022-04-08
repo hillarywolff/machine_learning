@@ -145,6 +145,13 @@ min_max = pd.concat([col_min, col_max, col_mean, col_med, tract], axis=1)
 # per dwelling? more than eight? 
 
 dwell_df = data[data['RM'] > 7]
+dwell_df.info()
+
+dwell_df = data[data['RM'] > 8]
+dwell_df.info()
+
+# more than 7: 64
+# more than 8: 13
 
 
 
