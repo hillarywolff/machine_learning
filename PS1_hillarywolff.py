@@ -5,6 +5,22 @@ Created on Wed Apr  6 15:19:54 2022
 
 @author: hillarywolff
 """
+# Ch. 2 #3
+# *sketch*
+# test error: decreases as flexibility increases until a point where the model starts to overfit the data, the opposite of training error
+# training error: decreases as flexibility increases since it will begin to overfit the model
+# variance: stays relatively flat with a slight increase as flexibility increases until a point where variance beomes higher since the model gets less robust
+# bayes error: a constant for this graph since it depends on the dataset
+# bias: decreases as flexibility increases since it will overfit the model, leaving zero or little bias
+# 
+# #5
+# advantages for very flexible model: low bias, can represent non-linear relationships
+# disadvantages for very flexible model: overfitting of the dataset (low training error and high test error) and high variance
+# when is flexibility preferred to less flexible: if we have a more complex, non-linear problem that won't be overfitted
+# when is less flexibility preferred to very flexible: linear problems where we aren't concered with a model overfitting
+# 
+
+
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -28,11 +44,13 @@ from mpl_toolkits.mplot3d import axes3d
 #  B        1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town
 #  LSTAT    % lower status of the population
 #  MEDV     Median value of owner-occupied homes in $1000's
+
+
 def read_data(fname):
     df = pd.read_csv(os.path.join(PATH, fname)) 
     return df
 
-PATH = r"/Users/hillarywolff/Documents/GitHub/Machine-learning/Boston"
+PATH = r"/Users/hillarywolff/Documents/GitHub/machine_learning/Boston"
 fname = 'Boston.csv'
 
 
@@ -46,6 +64,7 @@ rows_col = data.info()
 # b. 
 cols = list(data.columns)
 pair_plot = sns.pairplot(data[cols])
+
 
 # describe findings:
     
