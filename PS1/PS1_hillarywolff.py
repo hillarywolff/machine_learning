@@ -67,23 +67,84 @@ pair_plot = sns.pairplot(data[cols])
 
 
 # describe findings:
+# relationships: ageXnox (positive), disXnox (negative), LSTATXnox (weak positive)
+# mdev X RM (positive), lstatXRM (negative), ageXlstat (weak positive), disXage (weak negative), mdev Xlstat (negative)
+
     
 # c. are any predictors assiciated with per capita crime rate?
+# weak association with age, dis, lstat, mdev
 
 # D. do any of the census tracts of Boston appear to have particularly high crime rate?
 # tax rate? pupil-teacher ratio?
+high_crime = data['CRIM'].nlargest(n=5)
+data['CRIM'].plot(use_index=True)
+# highest crime are tracts: 380, 418, 405, 414
+high_tax = data['TAX'].nlargest(n=5)
+data['TAX'].plot(use_index=True)
+# highest tax rate are tracts: 488, 489, 490, 491, 492
+high_stu_teach = data['PTRATIO'].nlargest(n=5)
+data['PTRATIO'].plot(use_index=True)
+# 354, 355, 127, 128, 129
+
 
 # E. how many of the census tracts in this data set bound the charles river
+data['CHAS'].value_counts()
+# 35 bound the charles river
+
 
 # F. what is the median pupil-teacher ratio amount the towns in this data set
+data['PTRATIO'].median()
+# 19.05 
+
 
 # G. which cencus tract has the lowest median value of owner-occupied homes?
 # What are the values of the other predictors for that census tract, and how do 
 # those values compare to the overall ranges for those predictors?
+low_val = data['MDEV'].nsmallest(1)
+# 398
+tract = pd.DataFrame(data.iloc[398])
+
+# CRIM        38.3518
+# ZN           0.0000
+# INDUS       18.1000
+# CHAS         0.0000
+# NOX          0.6930
+# RM           5.4530
+# AGE        100.0000
+# DIS          1.4896
+# RAD         24.0000
+# TAX        666.0000
+# PTRATIO     20.2000
+# B          396.9000
+# LSTAT       30.5900
+# MDEV         5.0000
+
+col_max = data[cols].max()
+col_max = col_max.rename('MAX', inplace=True)
+col_min = data[cols].min()
+col_min = col_min.rename('MIN', inplace=True)
+col_mean = data[cols].mean()
+col_mean = col_mean.rename('MEAN', inplace=True)
+col_med = data[cols].median()
+col_med = col_med.rename('MEDIAN', inplace=True)
+
+min_max = pd.concat([col_min, col_max, col_mean, col_med, tract], axis=1)
+
+
+
+# comparing this tract to the min, max, and mean of the dataset as a whole,
+# it seems this specific tract is equal to the minimum value for variables ZN, 
+# CHAS, and MDEV. This tract is equal to the max value at AGE, B, and RAD. for
+# the remainder of the variables, CRIM is far above the mean and median, but 
+# less than the maximum. INDUS falls inbetween the mean and max,
+# while LSTAT, PTRATIO, and NOX are more aligned with the mean. Finally,
+# TAX is closer to the maximum value and DIS is closer to the minimum value. 
+
 
 # H. in this data set, how many of the census tracts average more than seven rooms
 # per dwelling? more than eight? 
 
+dwell_df = data[data['RM'] > 7]
 
 
 
