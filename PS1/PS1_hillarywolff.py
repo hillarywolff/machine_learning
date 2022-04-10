@@ -26,6 +26,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import statsmodels.formula.api as smf
 
 
 
@@ -119,18 +120,8 @@ tract = pd.DataFrame(data.iloc[low_val])
 # LSTAT       30.5900
 # MDEV         5.0000
 
-col_max = data[cols].max()
-col_max = col_max.rename('MAX', inplace=True)
-col_min = data[cols].min()
-col_min = col_min.rename('MIN', inplace=True)
-col_mean = data[cols].mean()
-col_mean = col_mean.rename('MEAN', inplace=True)
-col_med = data[cols].median()
-col_med = col_med.rename('MEDIAN', inplace=True)
-
-min_max = pd.concat([col_min, col_max, col_mean, col_med, tract], axis=1)
-
-
+compare_df  = data[cols].describe()
+tract_df = tract.describe()
 
 # comparing this tract to the min, max, and mean of the dataset as a whole,
 # it seems this specific tract is equal to the minimum value for variables ZN, 
@@ -144,11 +135,11 @@ min_max = pd.concat([col_min, col_max, col_mean, col_med, tract], axis=1)
 # H. in this data set, how many of the census tracts average more than seven rooms
 # per dwelling? more than eight? 
 
-dwell_df = data[data['RM'] > 7]
-dwell_df.info()
+dwell7_df = data[data['RM'] > 7]
+dwell7_df.info()
 
-dwell_df = data[data['RM'] > 8]
-dwell_df.info()
+dwell8_df = data[data['RM'] > 8]
+dwell8_df.info()
 
 # more than 7: 64
 # more than 8: 13
@@ -162,6 +153,64 @@ dwell_df.info()
 # there is very little evidence of an interaction effect
 
 # 15. 
+col_list = data.columns.difference(['name', 'CRIM'])
+for col in col_list:
+    print((smf.ols(formula=f'CRIM ~ {col}', data=data).fit().summary()))
+    
+# a describe results
+
+predictors = ' + '.join(data.columns.difference(['name', 'CRIM']))
+result = smf.ols('CRIM ~ {}'.format(predictors), data=data).fit()
+print(result.summary())
+
+# b. describe results
+
+# lopp for plotting? 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
