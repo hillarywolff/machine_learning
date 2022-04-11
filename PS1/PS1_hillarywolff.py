@@ -148,21 +148,91 @@ dwell8_df.info()
 
 # Chapter 3 #3
 # which answer is correct and why?
+# iii because the interaction term for level is negative, so at the threshold of 
+# GPA = 3.5, high school graduates can earn more than college graduates
+
 # predict the salary of a college graduate with an IQ of 110 and a GPA of 4.0
+# y = 50 + 20*gpa + .07*iq + 35*level + .01*gpa*iq + (-10)*gpa*level
+50 + 20*4.0 + .07*110 + 35*1 + .01*4*110 + (-10)*4*1
+# y = $137,100 starting salary
+
 # true or false: since the coefficient for the GPA/IQ interaction term is very small,
 # there is very little evidence of an interaction effect
+# True because any (realistic) IQ level and GPA 
 
 # 15. 
 col_list = data.columns.difference(['name', 'CRIM'])
+results_df = pd.DataFrame()
 for col in col_list:
-    print((smf.ols(formula=f'CRIM ~ {col}', data=data).fit().summary()))
-    
-# a describe results
+    results_summary = smf.ols(formula=f'CRIM ~ {col}', data=data).fit().summary()
+    results_as_html = results_summary.tables[1].as_html()
+    result_df = pd.read_html(results_as_html, header=0, index_col=0)[0]
+    results_df = results_df.append(result_df)
+results_df = results_df.reset_index()
 
+
+# a. describe results
+
+# AGE: significant, coef 0.107
+# B: significant, negative relationship (-0.035)
+# CHAS: insignificant, negative (-1.87)
+# DIS: significant, negative (-1.54)
+# INDUS: significant, positive 0.5
+# LSTAT: significant, 0.54
+# MDEV: significant, negative (-0.36)
+# NOX: significant, large, 30.97
+# PTRATIO: significant, 1.14
+# RAD: significant, 0.6
+# RM: signficiant, negative (-2.69)
+# TAX: significant, small, 0.029
+# ZN: significant, small (-0.7)
+
+
+## plots
+for col in col_list:
+    plt.figure(figsize=(10,8))
+    sns.regplot(x=f'{col}', y='CRIM', data=data)
+
+
+
+# multi variate model
 predictors = ' + '.join(data.columns.difference(['name', 'CRIM']))
-result = smf.ols('CRIM ~ {}'.format(predictors), data=data).fit()
-print(result.summary())
+result = smf.ols('CRIM ~ {}'.format(predictors), data=data).fit().summary()
+results_as_html = result.tables[1].as_html()
+multi_df = (pd.read_html(results_as_html, header=0, index_col=0)[0]).reset_index()
+print(multi_df)
 
+#         index     coef  std err      t  P>|t|  [0.025  0.975]
+# 0   Intercept  17.4184    7.270  2.396  0.017   3.135  31.702
+# 1         AGE   0.0020    0.018  0.112  0.911  -0.033   0.037
+# 2           B  -0.0069    0.004 -1.857  0.064  -0.014   0.000
+# 3        CHAS  -0.7414    1.186 -0.625  0.532  -3.071   1.588
+# 4         DIS  -0.9950    0.283 -3.514  0.000  -1.551  -0.439
+# 5       INDUS  -0.0616    0.084 -0.735  0.463  -0.226   0.103
+# 6       LSTAT   0.1213    0.076  1.594  0.112  -0.028   0.271
+# 7        MDEV  -0.1992    0.061 -3.276  0.001  -0.319  -0.080
+# 8         NOX -10.6455    5.301 -2.008  0.045 -21.061  -0.230
+# 9     PTRATIO  -0.2787    0.187 -1.488  0.137  -0.647   0.089
+# 10        RAD   0.5888    0.088  6.656  0.000   0.415   0.763
+# 11         RM   0.3811    0.616  0.619  0.536  -0.829   1.591
+# 12        TAX  -0.0037    0.005 -0.723  0.470  -0.014   0.006
+# 13         ZN   0.0449    0.019  2.386  0.017   0.008   0.082
+ #
+ 
+## For which predictors can we reject the null?
+# DIS, MDEV, NOX, RAD, ZN
+
+
+
+# plot
+unvar_reg = results_df[~results_df['index'].str.contains('Intercept')]
+multi_reg = multi_df[~multi_df['index'].str.contains('Intercept')]
+
+plt.figure(figsize=(10,8))
+sns.regplot(x=unvar_reg['coef'], y=multi_reg['coef'])
+plt.xlabel("Unvariate", fontsize=15)
+plt.ylabel("Multi Variate", fontsize=15)
+plt.title('Unvariate vs. Multi Variate', fontsize=20)
 # b. describe results
 
 # lopp for plotting? 
