@@ -6,7 +6,9 @@ Created on Wed Apr  6 15:19:54 2022
 @author: hillarywolff
 """
 # Ch. 2 #3
+
 # *sketch*
+
 # test error: decreases as flexibility increases until a point where the model starts to overfit the data, the opposite of training error
 # training error: decreases as flexibility increases since it will begin to overfit the model
 # variance: stays relatively flat with a slight increase as flexibility increases until a point where variance beomes higher since the model gets less robust
@@ -23,7 +25,6 @@ Created on Wed Apr  6 15:19:54 2022
 
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import statsmodels.formula.api as smf
@@ -106,7 +107,7 @@ tract = pd.DataFrame(data.iloc[low_val])
 compare_df  = data[cols].describe()
 tract_df = tract.describe()
 
-# comparing this tract to the min, max, and mean of the dataset as a whole,
+# comparing this tract to the dataset as a whole,
 # it seems this specific tract is equal to the minimum value for variables ZN, 
 # CHAS, and MDEV. This tract is equal to the max value at AGE, B, and RAD. for
 # the remainder of the variables, CRIM is far above the mean and median, but 
@@ -127,28 +128,32 @@ dwell8_df.info()
 # more than 8: 13
 
 
-
 # Chapter 3 #3
 # A. 
 ## which answer is correct and why?
+#
 # iii because the interaction term for level is negative, so at the threshold of 
 # GPA = 3.5, high school graduates can earn more than college graduates
 
 ## B.
 # predict the salary of a college graduate with an IQ of 110 and a GPA of 4.0
+#
 # y = 50 + 20*gpa + .07*iq + 35*level + .01*gpa*iq + (-10)*gpa*level
-50 + 20*4.0 + .07*110 + 35*1 + .01*4*110 + (-10)*4*1
+# 50 + 20*4.0 + .07*110 + 35*1 + .01*4*110 + (-10)*4*1
 # y = $137,100 starting salary
 
 ## C. 
 # true or false: since the coefficient for the GPA/IQ interaction term is very small,
 # there is very little evidence of an interaction effect
-# True because any (realistic) IQ level and GPA 
+#
+# False, the effect size is small, but the interaction term involves multiplying
+# GPA and IQ, creating some large numbers. So this coefficient might be small, 
+# the overall impact of this interaction term could be large and significant. 
 
 # 15. 
 ## A. 
 
-col_list = data.columns.difference(['name', 'CRIM'])
+col_list = data.columns.difference(['CRIM'])
 results_df = pd.DataFrame()
 for col in col_list:
     results_summary = smf.ols(formula=f'CRIM ~ {col}', data=data).fit().summary()
@@ -160,32 +165,31 @@ results_df = results_df.reset_index()
 # describe results
 
 # AGE: significant, coef 0.107
-# B: significant, negative relationship (-0.035)
+# B: significant, negative relationship, small effect (-0.035)
 # CHAS: insignificant, negative (-1.87)
 # DIS: significant, negative (-1.54)
 # INDUS: significant, positive 0.5
-# LSTAT: significant, 0.54
-# MDEV: significant, negative (-0.36)
-# NOX: significant, large, 30.97
+# LSTAT: significant, small effect,  0.54
+# MDEV: significant, negative, small effect (-0.36)
+# NOX: significant, large effect, 30.97
 # PTRATIO: significant, 1.14
-# RAD: significant, 0.6
-# RM: signficiant, negative (-2.69)
+# RAD: significant, small effect, 0.6
+# RM: signficiant, negative, relatively larger (-2.69)
 # TAX: significant, small, 0.029
-# ZN: significant, small (-0.7)
+# ZN: significant, negative, small (-0.7)
 
 ## plots
-for col in col_list:
-    plt.figure(figsize=(10,8))
-    sns.regplot(x=f'{col}', y='CRIM', data=data)
+# for col in col_list:
+#     plt.figure(figsize=(10,8))
+#     sns.regplot(x=f'{col}', y='CRIM', data=data)
 
 
 ## B. 
 # multi variate model
-predictors = ' + '.join(data.columns.difference(['name', 'CRIM']))
+predictors = ' + '.join(col_list)
 result = smf.ols('CRIM ~ {}'.format(predictors), data=data).fit().summary()
 results_as_html = result.tables[1].as_html()
 multi_df = (pd.read_html(results_as_html, header=0, index_col=0)[0]).reset_index()
-print(multi_df)
 
 #         index     coef  std err      t  P>|t|  [0.025  0.975]
 # 0   Intercept  17.4184    7.270  2.396  0.017   3.135  31.702
@@ -213,11 +217,11 @@ print(multi_df)
 unvar_reg = results_df[~results_df['index'].str.contains('Intercept')]
 multi_reg = multi_df[~multi_df['index'].str.contains('Intercept')]
 
-plt.figure(figsize=(10,8))
-sns.regplot(x=unvar_reg['coef'], y=multi_reg['coef'])
-plt.xlabel("Unvariate", fontsize=15)
-plt.ylabel("Multi Variate", fontsize=15)
-plt.title('Unvariate vs. Multi Variate', fontsize=20)
+# plt.figure(figsize=(10,8))
+# sns.regplot(x=unvar_reg['coef'], y=multi_reg['coef'])
+# plt.xlabel("Unvariate", fontsize=15)
+# plt.ylabel("Multi Variate", fontsize=15)
+# plt.title('Unvariate vs. Multi Variate', fontsize=20)
 
 # D. 
 
@@ -233,7 +237,6 @@ for col in col_list:
 
 non_linear_df = non_linear_df.reset_index()
 non_linear_df = non_linear_df[~non_linear_df['index'].str.contains('Intercept')]
-print(non_linear_df)
 
 #               index          coef       std err       t  P>|t|        [0.025  \
 # 1               AGE  2.743000e-01  1.860000e-01   1.471  0.142 -9.200000e-02   
