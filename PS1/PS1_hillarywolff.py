@@ -3,24 +3,38 @@
 """
 Created on Wed Apr  6 15:19:54 2022
 
-@author: hillarywolff
+@author: hillarywolff with Jason Winik
 """
 # Ch. 2 #3
 
-# *sketch*
+# *sketch attached as separate JPEG*
 
-# test error: decreases as flexibility increases until a point where the model starts to overfit the data, the opposite of training error
+# test error: decreases as flexibility increases until a point where the model 
+# starts to overfit the data and is the opposite of training error. sum of bias, 
+# variance, and irreducible error
+#
 # training error: decreases as flexibility increases since it will begin to overfit the model
-# variance: stays relatively flat with a slight increase as flexibility increases until a point where variance beomes higher since the model gets less robust
-# bayes error: a constant for this graph since it depends on the dataset
-# bias: decreases as flexibility increases since it will overfit the model, leaving zero or little bias
+#
+# variance: stays relatively flat with a slight increase as flexibility increases 
+# until a point where variance becomes higher since the model gets less robust
+#
+# bayes error: a constant because it does not vary with flexibility 
+#
+# bias: decreases as flexibility increases since it will overfit the model, 
+# leaving zero or little bias
 # 
 # #5
 # advantages for very flexible model: low bias, can represent non-linear relationships
-# disadvantages for very flexible model: overfitting of the dataset (low training error and high test error) and high variance
-# when is flexibility preferred to less flexible: if we have a more complex, non-linear problem that won't be overfitted
-# when is less flexibility preferred to very flexible: linear problems where we aren't concered with a model overfitting
+#
+# disadvantages for very flexible model: overfitting of the dataset 
+# (low training error and high test error) and high variance
 # 
+# when is flexibility preferred to less flexible: if we have a more complex, 
+# non-linear problem that won't be overfitted
+#
+# when is less flexibility preferred to very flexible: linear problems where we 
+# aren't concered with a model overfitting
+
 
 
 import pandas as pd
@@ -28,6 +42,7 @@ import os
 import seaborn as sns
 import numpy as np
 import statsmodels.formula.api as smf
+import matplotlib.pyplot as plt
 
  
 def read_data(fname):
@@ -42,21 +57,20 @@ data = read_data(fname)
 # Ch. 2 #10
 # a. rows = 506
 #    columns = 14
-#    what do rows and columns represent? 
+#    each row represents an individual cencus tract 
 rows_col = data.info()
 
 # b. 
 cols = list(data.columns)
 pair_plot = sns.pairplot(data[cols])
 
-
-# describe findings:
-# relationships: ageXnox (positive), disXnox (negative), LSTATXnox (weak positive)
-# mdev X RM (positive), lstatXRM (negative), ageXlstat (weak positive), disXage (weak negative), mdev Xlstat (negative)
+# Observations: AGE & NOX (positive), DIS & NOX (negative), LSTAT & NOX (weak positive)
+# MDEV & RM (positive), LSTAT & RM (negative), AGE & LSTAT (weak positive), 
+# DIS & AGE (weak negative), MDEV X LSTAT (negative)
 
     
 # c. are any predictors assiciated with per capita crime rate?
-# weak association with age, dis, lstat, mdev
+# ZN, INDUS, AGE, DIS, NOX, MDEV
 
 # D. do any of the census tracts of Boston appear to have particularly high crime rate?
 # tax rate? pupil-teacher ratio?
@@ -146,9 +160,9 @@ dwell8_df.info()
 # true or false: since the coefficient for the GPA/IQ interaction term is very small,
 # there is very little evidence of an interaction effect
 #
-# False, the effect size is small, but the interaction term involves multiplying
-# GPA and IQ, creating some large numbers. So this coefficient might be small, 
-# the overall impact of this interaction term could be large and significant. 
+# False, the effect size being small is not the object of interest here, the P
+# value is. regardless of the size of the effect, the statistical significance 
+# is what matters. 
 
 # 15. 
 ## A. 
@@ -179,9 +193,9 @@ results_df = results_df.reset_index()
 # ZN: significant, negative, small (-0.7)
 
 ## plots
-# for col in col_list:
-#     plt.figure(figsize=(10,8))
-#     sns.regplot(x=f'{col}', y='CRIM', data=data)
+for col in col_list:
+    plt.figure(figsize=(10,8))
+    sns.regplot(x=f'{col}', y='CRIM', data=data)
 
 
 ## B. 
@@ -209,7 +223,7 @@ multi_df = (pd.read_html(results_as_html, header=0, index_col=0)[0]).reset_index
  #
  
 ## For which predictors can we reject the null?
-# DIS, MDEV, NOX, RAD, ZN
+# DIS, MDEV, NOX, RAD, ZN are all statistically significant and different from 0
 
 
 ## C. 
@@ -217,11 +231,16 @@ multi_df = (pd.read_html(results_as_html, header=0, index_col=0)[0]).reset_index
 unvar_reg = results_df[~results_df['index'].str.contains('Intercept')]
 multi_reg = multi_df[~multi_df['index'].str.contains('Intercept')]
 
-# plt.figure(figsize=(10,8))
-# sns.regplot(x=unvar_reg['coef'], y=multi_reg['coef'])
-# plt.xlabel("Unvariate", fontsize=15)
-# plt.ylabel("Multi Variate", fontsize=15)
-# plt.title('Unvariate vs. Multi Variate', fontsize=20)
+plt.figure(figsize=(10,8))
+sns.regplot(x=unvar_reg['coef'], y=multi_reg['coef'])
+plt.xlabel("Unvariate", fontsize=15)
+plt.ylabel("Multi Variate", fontsize=15)
+plt.title('Unvariate vs. Multi Variate', fontsize=20)
+
+# the simple regression provided statistically significant results for all 
+# variables except for CHAS, while the multivariate regression had fewer
+# significant results, but this is as expected since covariation is taken into
+# account
 
 # D. 
 
@@ -280,46 +299,11 @@ non_linear_df = non_linear_df[~non_linear_df['index'].str.contains('Intercept')]
 # 51         ZN_cubed -3.753000e-05  3.140000e-05  -1.196  0.232 -9.920000e-05   
 
 
-#           0.975]  
-# 1   6.410000e-01  
-# 2  -8.250000e-05  
-# 3   9.880000e-05  
-# 5   2.600000e-02  
-# 6   1.000000e-03  
-# 7   5.700000e-07  
-# 9   3.620000e-01  
-# 10  3.620000e-01  
-# 11  3.620000e-01  
-# 13 -1.210400e+01  
-# 14  3.129000e+00  
-# 15 -7.800000e-02  
-# 17 -1.005000e+00  
-# 18  3.280000e-01  
-# 19 -5.000000e-03  
-# 21  5.020000e-01  
-# 22  1.120000e-01  
-# 23  0.000000e+00  
-# 25 -4.222000e+00  
-# 26  1.890000e-01  
-# 27 -1.000000e-03  
-# 29 -9.284140e+02  
-# 30  2.774637e+03  
-# 31 -9.383000e+02  
-# 33 -2.748700e+01  
-# 34  7.764000e+00  
-# 35 -2.300000e-02  
-# 37  2.569000e+00  
-# 38  2.180000e-01  
-# 39  1.200000e-02  
-# 41  2.275900e+01  
-# 42  1.430000e+01  
-# 43  3.480000e-01  
-# 45  3.600000e-02  
-# 46  1.000000e-03  
-# 47  1.530000e-07  
-# 49 -1.150000e-01  
-# 50  1.400000e-02  
-# 51  2.410000e-05  
+
+# the output shows significance for the following variables:
+# AGE_squared, AGE_cubed, DIS, DIS_squared, DIS_cubed, INDUS, INDUS_squared, 
+# INDUS_cubed, MDEV, MDEV_squared, MVDEV_cubed, NOX, NOX_squared, NOX_cubed, 
+# PTRATIO, PTRATIO_squared, PTRATIO_cubed, and ZN
 
 
 
