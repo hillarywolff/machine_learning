@@ -6,7 +6,19 @@ Created on Sat Apr 23 15:06:08 2022
 @author: hillarywolff
 """
 
+import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import random
+
+import sklearn.linear_model as skl_lm
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split, LeaveOneOut, KFold, cross_val_score
+from sklearn.preprocessing import PolynomialFeatures
+
+#%matplotlib inline
+plt.style.use('seaborn-white')
 
 # 5. difference between LDA and QDA
 
@@ -73,8 +85,11 @@ np.exp(-.5)/1+(np.exp(-.5))
 # Pyes(X=4) = .8*np.exp(-(1/72)(4-10)^2)/ .8*np.exp(-(1/72)(4-10)^2) + .2*np.exp(-(1/72)(4-0)^2)
 # Pyes(X=4) = 75.2%
 
+# Chapter 5
+# 5. estimating test error of logistic regression model using validation set approach
 
 
+# seed = random.seed()
 
 
 
