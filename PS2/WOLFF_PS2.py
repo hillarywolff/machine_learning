@@ -85,6 +85,13 @@ np.exp(-.5)/1+(np.exp(-.5))
 # Pyes(X=4) = .8*np.exp(-(1/72)(4-10)^2)/ .8*np.exp(-(1/72)(4-10)^2) + .2*np.exp(-(1/72)(4-0)^2)
 # Pyes(X=4) = 75.2%
 
+# 14.
+
+df = 
+
+
+
+
 # Chapter 5
 # 5. estimating test error of logistic regression model using validation set approach
 
