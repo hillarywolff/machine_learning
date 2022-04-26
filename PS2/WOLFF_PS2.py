@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random
+import statsmodels.formula.api as smf
 
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
@@ -146,9 +147,28 @@ print('Naive Bayes Accuracy:', accuracy_score(y_test, y_pred))
 # Chapter 5
 # 5. estimating test error of logistic regression model using validation set approach
 
+df = pd.read_csv(PATH + 'Data-Default.csv')
+df['default'] = df['default'].eq('Yes').mul(1)
 
-# seed = random.seed()
+X = df[['income', 'balance']]
+y = df['default']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=16)
 
+logisticRegr.fit(X_train, y_train)
+
+
+for i, seed in enumerate([16, 78, 244]):
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, random_state=seed)
+    lda_model = LinearDiscriminantAnalysis()
+    lda_model.fit(X_train, y_train)
+    y_pred = lda_model.predict(X_val)
+    validation_set_error = 1 - accuracy_score(y_val, y_pred)
+    
+    print("Validation set error with set", i+1 ," is: " , validation_set_error)
+    
+# Validation set error with set 1  is:  0.026000000000000023
+# Validation set error with set 2  is:  0.02733333333333332
+# Validation set error with set 3  is:  0.02833333333333332
 
 
 
