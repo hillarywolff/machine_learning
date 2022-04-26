@@ -10,8 +10,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import random
-import statsmodels.formula.api as smf
 
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
