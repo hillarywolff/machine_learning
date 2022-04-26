@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import random
 
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 import sklearn.linear_model as skl_lm
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import train_test_split, LeaveOneOut, KFold, cross_val_score
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -60,6 +63,8 @@ np.exp(-.5)/1+(np.exp(-.5))
 # 1.21?
 # 37.7% chance
 
+# B. how many hours would the student in part A need to study to have a 50% 
+# chance of getting an A in the class?
 
 # (np.exp(-6+(.05X)+3.5))/1+(np.exp(-6+(.05X)+3.5)) = .5
 # np.exp(-6+(.05*40)+3.5) = 1
@@ -68,9 +73,6 @@ np.exp(-.5)/1+(np.exp(-.5))
 # X = 50
 # need to study 50 hours to have a 50% chance of an A
 
-# B. how many hours would the student in part A need to study to have a 50% 
-# chance of getting an A in the class?
-# *****
 
 # 7. suppose that we wish to predict whether a given stock will issue a dividend
 # this year (yes or no) based on X, last year's percent profit. The mean value 
@@ -80,16 +82,65 @@ np.exp(-.5)/1+(np.exp(-.5))
 # Assuming that X follows a normal distribution, predict the probability that a 
 # company will issue a divided this year given that its percentage profit was X=4
 # last year. 
+# ******************
+
+discrim_1 = np.log(.8) - ((10^2)/(2*36)) + ((10/36)*4)
+
+discrim_2 = np.log(.2) - ((0^2)/(2*36)) + ((0/36)*4)
+
+prediction = (np.exp(discrim_1))/((np.exp(discrim_1))+(np.exp(discrim_2)))
+
+# Pyes(X=4) = 75%
 
 
-# Pyes(X=4) = .8*np.exp(-(1/72)(4-10)^2)/ .8*np.exp(-(1/72)(4-10)^2) + .2*np.exp(-(1/72)(4-0)^2)
-# Pyes(X=4) = 75.2%
 
 # 14.
+# A. 
+PATH = r"/Users/hillarywolff/Documents/GitHub/machine_learning/PS2/"
+df = pd.read_csv(PATH + 'Data-Auto.csv')
 
-df = 
+median_mpg = df['mpg'].median() # 22.75 is median
+df['mpg01'] = np.where((df['mpg'] > median_mpg), 1, 0)
 
+# B. 
+cols = list(df.columns)
+pair_plot = sns.pairplot(df[cols])
 
+# displacement, horsepower, weight are predictors of mpg01
+
+# C. 
+lda_model = LinearDiscriminantAnalysis(solver='svd')
+
+X = df[['displacement', 'horsepower', 'weight']]
+y = df['mpg01']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=16)
+
+lda_model.fit(X_train, y_train)
+y_pred = lda_model.predict(X_test)
+print('Accuracy:', accuracy_score(y_test, y_pred))
+# accuracy 90%, test error 10%
+
+# E. 
+qda_model = QuadraticDiscriminantAnalysis()
+qda_model.fit(X_train, y_train)
+y_pred = qda_model.predict(X_test)
+print('Accuracy:', accuracy_score(y_test, y_pred))
+# accuracy 88.9%, test error 12%
+
+# F. 
+logisticRegr = LogisticRegression()
+logisticRegr.fit(X_train, y_train)
+y_pred_log = logisticRegr.predict_proba(X_test)[:,1]
+
+y_pred_log_bin = np.where(y_pred_log>0.5, 1, 0)
+print('OLS Accuracy:', accuracy_score(y_test, y_pred_log_bin))
+# accuracy 87%, test error 13%
+
+# G
+gnb = GaussianNB()
+y_pred = gnb.fit(X_train, y_train).predict(X_test)
+print('Naive Bayes Accuracy:', accuracy_score(y_test, y_pred))
+# accuracy 88.9%, test error 12%
 
 
 # Chapter 5
