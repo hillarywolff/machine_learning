@@ -58,8 +58,7 @@ plt.style.use('seaborn-white')
 # P(x) = e^(-6+(0.05*40)+(1*3.5))/ 1+(" ")
 
 # where (np.exp(-6+(.05*40)+3.5)) = -0.5
-np.exp(-.5)/1+(np.exp(-.5))
-# 1.21?
+# np.exp(-.5)/1+(np.exp(-.5))
 # 37.7% chance
 
 # B. how many hours would the student in part A need to study to have a 50% 
@@ -89,7 +88,7 @@ discrim_2 = np.log(.2) - ((0^2)/(2*36)) + ((0/36)*4)
 
 prediction = (np.exp(discrim_1))/((np.exp(discrim_1))+(np.exp(discrim_2)))
 
-# Pyes(X=4) = 75%
+# Pyes(X=4) = 91.7%
 
 
 
