@@ -43,18 +43,25 @@ for col in cols:
 # audit_risk:1.714
 # risk: 1
 
-# is wildly uneven variance across the attributes is a cause for concern?
+# 1. is wildly uneven variance across the attributes is a cause for concern?
+# yes, this is concerning because the data is not normalized and different 
+# attributes will have more effect than others. To fix this, we would normalize
+# our data so that it is all on the same level. 
 
-# 2. 
-# are there circumstances under which you would not be concerned with the 
+# 2. are there circumstances under which you would not be concerned with the 
 # wildly uneven variance?
+# this wouldn't be as much of a concern if we have a large sample where variance
+# decreases with the increase in sample size. 
 
-# 3. 
-# which attributes do you suspect might interact as far as a firms ex ante 
+
+# 3. which attributes do you suspect might interact as far as a firms ex ante 
 # probability of tax evasion is concered? 
-
+# I would suspect that historical risk factor, inherent risk, and PARA A would
+# interact with the probability for tax evasion.
 # without creating an interaction variable, what advantage does KNN have over 
 # LPM if the interaction is important?
+# this is because KNN is a non parametric model while LPM is better for linear 
+# models.
 
 
 ##########################
@@ -64,7 +71,7 @@ def heat_map(cm):
     ax = sns.heatmap(cm, annot=True, 
                 fmt='.2%', cmap='Blues')
     
-    ax.set_title('OLS: Confusion Matrix with labels\n');
+    ax.set_title('Confusion Matrix with labels\n');
     ax.set_xlabel('\nPredicted Values')
     ax.set_ylabel('Actual Values ');
     ax.xaxis.set_ticklabels(['False','True'])
@@ -84,7 +91,6 @@ X = df.loc[:, df.columns != 'Risk']
 y = df['Risk']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
 
-
 # For firms with a predicted probability of tax evasion greater than 0.5, what 
 # proportion of firms evaded taxes? (add confusion matricies)
 
@@ -95,12 +101,16 @@ sns.histplot(y_pred_ols)
 
 y_pred_ols_bin = np.where(y_pred_ols>0.5, 1, 0)
 cm_ols = confusion_matrix(y_test, y_pred_ols_bin, normalize ='true')
+print(confusion_matrix(y_test, y_pred_ols_bin))
 #print(cm_ols)
-# [[0.97959184 0.02040816]
-#  [0.21678322 0.78321678]]
+# [[0.98366013 0.01633987]
+#  [0.65853659 0.34146341]]
 
+# [[301   5]
+#  [ 54  28]]
+# proportion: 28/(28+5), 84% who were predicted to evade actually did
 heat_map(cm_ols)
-# our OLS caught 78.32% of predicted evaders
+# our OLS caught 34.32% of predicted evaders
 
 # for firms with predicted probability over 0.8, what fraction evaded taxes?
 # (add confusion matricies)
@@ -111,13 +121,18 @@ sns.histplot(y_pred_ols)
 
 y_pred_ols_bin = np.where(y_pred_ols>0.8, 1, 0)
 cm_ols = confusion_matrix(y_test, y_pred_ols_bin, normalize ='true')
+print(cm_ols)
+print(confusion_matrix(y_test, y_pred_ols_bin))
 #print(cm_ols)
-# [[0.97959184 0.02040816]
-#  [0.21678322 0.78321678]]
+
+# [[1.         0.        ]
+#  [0.86585366 0.13414634]]
+# [[306   0]
+#  [ 71  11]]
+# proportion: 11/11, 100% of those predicted to evade were caught
 
 heat_map(cm_ols)
-
-# with a threshold of 0.8, our model only predicted 51% of those who committed
+# with a threshold of 0.8, our model only predicted 13% of those who committed
 # tax fraud. 
 
 # 5. using the first half of the data as training data, fit a KNN model on the 
@@ -389,18 +404,43 @@ opt_k2 = cost.index(min_value)
 print(ks[opt_k2])
 print(false_neg[opt_k2])
 
+# sorry, I cannot for the life of me figure out the threshold thing, but I
+# did my best!!
 
-optimal_idx = np.argmax(false_pos - false_neg)
-optimal_threshold = thresholds[optimal_idx]
-print("Threshold value is:", optimal_threshold)
+# 10. using the first half of the data as training data, use LDA to classify 
+# the firms in the testing data. between KNN and LDA, which has a higher proportion
+# of firms that evaded taxes in a pool of firms classified as tax evaders?
 
+# I think that KNN will perform better since it is best for non-linear relatonships.
+# as we saw in earlier questions, using KNN got us the highst success rate for 
+# catching those who evade taxes while the linear model did not do as well in
+# comparison. 
 
+# LDA model
+lda_model = LinearDiscriminantAnalysis(solver='svd')
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle='false')
+lda_model.fit(X_train, y_train)
+y_pred = lda_model.predict(X_test)
+accuracy_score(y_test, y_pred)
+# 90% accuracy
+print(confusion_matrix(y_test, y_pred))
+#[[230   1]
+# [ 34 123]]
 
-
-
-
-
-
+# KNN (from above)
+knn_1 = KNeighborsClassifier(n_neighbors = 1)
+knn_1.fit(X_norm_train, y_train)
+y_pred_knn1 = knn_1.predict(X_norm_test)
+accuracy_score(y_test, y_pred_knn1)
+# 93%
+cm_knn1 = confusion_matrix(y_test, y_pred_knn1, normalize = 'true')
+print(cm_knn1)
+print(confusion_matrix(y_test, y_pred_knn1))
+# [[281  25]
+#  [  1  81]]
+heat_map(cm_knn1)
+# with KNN1, we have a 93% success rate, and the algo has found 81 people
+# that did commit tax fraud
 
 
 
