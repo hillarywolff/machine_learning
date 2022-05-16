@@ -84,7 +84,7 @@ mean_squared_error(y_test, y_pred)
 
 # b. why might you be concerned with overfitting in this context? is there any 
 # evidence of overfitting?
-
+# *******************
 
 
 
@@ -94,7 +94,7 @@ mean_squared_error(y_test, y_pred)
 # cross validation estimates of the test error as a function of the hyperparameter 
 # that indicates the tuned value of lambda. 
 ridge = Ridge(normalize = True)
-alpha_param = (10**np.linspace(start=0.01, stop=100, num=100))
+alpha_param = (10**np.linspace(start=-2, stop=2, num=100))
 
 param_grid = [{'alpha': alpha_param }]
 
@@ -112,16 +112,16 @@ plt.xlabel("log(Alpha)", fontsize= 20)
 plt.show()
 
 print(min(mean_vec))
-# 2354.21
+# 2303.30
 
 optimal_alph = alpha_param[np.where(mean_vec == min(mean_vec))][0]
-# 1.02
+# 0.135
 
 
 
 # lasso
 lasso = Lasso(normalize = True)
-alpha_param = (10**np.linspace(start=0.01, stop=100, num=100))
+alpha_param = (10**np.linspace(start=-2, stop=2, num=100))
 
 param_grid = [{'alpha': alpha_param }]
 grid_search_lasso = GridSearchCV(lasso, param_grid, cv = 10, scoring = 'neg_mean_squared_error')
@@ -140,13 +140,17 @@ plt.show()
 
 
 print(min(mean_vec))
-# 2743.88
+# 2277.01
 
 optimal_alph = alpha_param[np.where(mean_vec == min(mean_vec))][0]
-# 1.02
+# 0.01
 
 
-
+# 8. did ridge regression and or the lasso improve your prediction over OLS?
+# 
+# OLS had smallest MSE, with lasso being second best and ridge being worst
+# for estimating our model. I would recommend the OLS methods to the CDC since
+# it gives us ************
 
 
 
