@@ -41,7 +41,7 @@ def vector_values(grid_search, trials):
 # filter variables
 
 PATH = r"/Users/hillarywolff/Documents/GitHub/machine_learning/MP3/"
-df = pd.read_csv(PATH + 'Covid002.csv', encoding='unicode_escape')
+df = pd.read_csv(PATH + 'Covid002.csv', encoding='latin-1')
 
 col_use = pd.read_excel(PATH+'Variable Description.xlsx')
 var_use = col_use[(col_use['Source'] == 'Opportunity Insights') | (col_use['Source']=='PM_COVID')]
@@ -64,17 +64,20 @@ df = pd.get_dummies(df, columns =['state'])
 X = df[df.columns.difference(['deathspc', 'county'])]
 y = df[['deathspc']]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=25)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=25)
 
 # using training set, estimate relationship between COVID_19 deaths per capita
 # and the opportunity insights and PM COVID predictors as well as state level
 # fixed effects
 
 reg = LinearRegression().fit(X_train, y_train)
-print(reg.score(X_train, y_train))
-# 0.346
-print(reg.score(X_test, y_test))
-#0.268
+y_pred = reg.predict(X_test)
+mean_squared_error(y_test, y_pred)
+# 1927.2
+y_pred = reg.predict(X_train)
+mean_squared_error(y_train, y_pred)
+#1561.85
+
 
 # a. based on those estimates, calculate and report the MSE in both training
 # and validation sets
@@ -84,7 +87,9 @@ mean_squared_error(y_test, y_pred)
 
 # b. why might you be concerned with overfitting in this context? is there any 
 # evidence of overfitting?
-# *******************
+# since p is less than n, we are not concerned for overfitting outright, but
+# it is likely that there are some extraneous variables being used in our
+# model which could overfit our data.
 
 
 
@@ -114,8 +119,11 @@ plt.show()
 print(min(mean_vec))
 # 2303.30
 
-optimal_alph = alpha_param[np.where(mean_vec == min(mean_vec))][0]
+alpha_ridge = alpha_param[np.where(mean_vec == min(mean_vec))][0]
 # 0.135
+
+clf = Ridge(normalize=True, alpha=alpha_ridge)
+clf.fit(X, y)
 
 
 
@@ -142,22 +150,40 @@ plt.show()
 print(min(mean_vec))
 # 2277.01
 
-optimal_alph = alpha_param[np.where(mean_vec == min(mean_vec))][0]
+alpha_lasso = alpha_param[np.where(mean_vec == min(mean_vec))][0]
 # 0.01
 
+lass = Lasso(normalize=True, alpha=alpha_lasso)
+lass.fit(X, y)
+
+
+
+# MSE Ridge test
+y_pred = clf.predict(X_test)
+mean_squared_error(y_test, y_pred)
+# 1701
+
+# MSE ridge train
+y_pred = clf.predict(X_train)
+mean_squared_error(y_train, y_pred)
+# 1618.85
+
+# MSE Lasso test
+y_pred = lass.predict(X_test)
+mean_squared_error(y_test, y_pred)
+# 1663.49
+
+# MSE lasso train
+y_pred = lass.predict(X_train)
+mean_squared_error(y_train, y_pred)
+# 1653.23
 
 # 8. did ridge regression and or the lasso improve your prediction over OLS?
-# 
-# OLS had smallest MSE, with lasso being second best and ridge being worst
-# for estimating our model. I would recommend the OLS methods to the CDC since
-# it gives us ************
-
-
-
-
-
-
-
+# the ridge and lasso regressions improved our prediction over OLS and
+# our lasso regression is the method I would recommend since it has the lowest MSE
+# as well as the lowest difference between our validation and test predictions.
+# ridge would be second best and OLS would be the worst. This is because we are 
+# looking for the lowest MSE since it balances bias and varaince well
 
 
 
