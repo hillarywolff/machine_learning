@@ -25,7 +25,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from itertools import combinations
 from sklearn import model_selection
-from sklearn.preprocessing import scale 
+from sklearn.preprocessing import StandardScaler 
 
 def heat_map(cm):
     fig, ax = plt.subplots()
@@ -61,57 +61,40 @@ mean_squared_error(y_test, y_pred_ols)
 
 # e. fit a PCR model on the training set, with M chosen by cross-validation.
 # report the test error obtained, along with the value of M selected by X-val
-pca = PCA()
-X_reduced_train = pca.fit_transform(scale(X_train))
-n = len(X_reduced_train)
-kf_10 = model_selection.KFold(n_splits=10, shuffle=True, random_state=37)
-model = LinearRegression()
-mse = []
+n_components = np.arange(2, 18)
+key = []
+values = []
+for i in n_components:
+    pcr = make_pipeline(StandardScaler(), PCA(n_components=i), LinearRegression())
+    pcs = pcr.fit(X_train, y_train)
+    y_predict = pcr.predict(X_test)
+    key.append(i)
+    values.append(mean_squared_error(y_test, y_predict))
+pcr_mse = dict(zip(key, values))
 
-score = -1*model_selection.cross_val_score(model, np.ones((n,1)), 
-        y_train.values.ravel(), cv=kf_10, scoring='neg_mean_squared_error').mean()
-mse.append(score)
-
-for i in np.arange(2, 18):
-    score = -1*model_selection.cross_val_score(model, X_reduced_train[:,:i], 
-    y_train.values.ravel(), cv=kf_10, scoring='neg_mean_squared_error').mean()
-    mse.append(score)
-
-min(mse)
-# M=17, MSE = 1649769.019
-
-X_reduced_test = pca.transform(scale(X_test))[:,:17]
-
-# Train regression model on training data 
-model = LinearRegression()
-model.fit(X_reduced_train[:,:17], y_train)
-
-# Prediction with test data
-y_pred = model.predict(X_reduced_test)
-mean_squared_error(y_test, y_pred)
-# MSE = 1370097.41
+min(pcr_mse, key=pcr_mse.get)
+# M=17, error: 1382455.02
 
 
 # f. fit a PLS model on the training set, with M chosen by cross-validation.
 # report the test error obtained, along with the value of M selected by X-val
-n = len(X_train)
-kf_10 = model_selection.KFold(n_splits=10, shuffle=True, random_state=37)
-mse = []
+pls = PLSRegression()
+components = np.arange(2, 18)
+param_grid = [{'n_components' : components}]
 
-for i in np.arange(2, 18):
-    pls = PLSRegression(n_components=i)
-    score = model_selection.cross_val_score(pls, scale(X_train), y_train, 
-    cv = kf_10, scoring='neg_mean_squared_error').mean()
-    mse.append(-score)
+grid_search_pls = GridSearchCV(pls, param_grid, cv=10, scoring = 'neg_mean_squared_error')
+grid_predict = grid_search_pls.fit(X_train, y_train)
+y_pred = grid_predict.predict(X_test)
+print(mean_squared_error(y_test, y_pred))
+print(grid_search_pls.best_params_)
 
-min(mse)
-# M=9, MSE=1649557.56
+# M=10, MSE=1406884.07
 
 pls = PLSRegression(n_components=9)
-pls.fit(scale(X_train), y_train)
+pls.fit(X_train, y_train)
 
-mean_squared_error(y_test, pls.predict(scale(X_test)))
-# MSE = 1407576.20
+mean_squared_error(y_test, pls.predict(X_test))
+# MSE = 1420360.40
 
 
 # g. comment on the results obtained. how accurrately can we predict the number
@@ -122,7 +105,8 @@ mean_squared_error(y_test, pls.predict(scale(X_test)))
 # 1370097, and PLS at 1407576. This means that our PCR is the best predictor
 # of college applications received since it has the lowest MSE. The three
 # tests are not that far from each other in MSE result, specifically comparing
-# OLS to PCR since they are very similar to each other. 
+# OLS to PCR since they are very similar to each other. Our results however are 
+# incredibly inaccurate given how high the MSEs are.
 
 
 # ch. 8, #4
@@ -130,6 +114,7 @@ mean_squared_error(y_test, pls.predict(scale(X_test)))
 # in the left-handed panel of figure 8.14. the numbers inside the boxes indicate 
 # the mean of Y within each region.
 
+#### see attached
 
 
 # b. Create a diagram similar to the left-handed panel of figure 8.14, using 
@@ -137,8 +122,7 @@ mean_squared_error(y_test, pls.predict(scale(X_test)))
 # divide up the predictor space into the correct regions, and indicate the mean
 # for each region
 
-
-
+##### see attached
 
 # modified question 9
 
@@ -147,22 +131,21 @@ mean_squared_error(y_test, pls.predict(scale(X_test)))
 
 oj = pd.read_csv(PATH+'Data-OJ.csv')
 oj['Store7'] = np.where(oj['Store7'].str.contains('Yes'), 1, 0)
+oj['Purchase'] = np.where(oj['Purchase'].str.contains('CH'), 1, 0)
 
-train = oj.sample(n=800)
-test = oj[~oj.isin(train)]
+X = oj.drop(['Purchase'], axis=1)
+y = oj[['Purchase']]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.252, random_state=37)
 
 # ii. Fit a full, unpruned tree to the training data, with Purchase as the response and the
 # other variables as predictors. What is the training error rate?
 
-X_train = train.drop(['Purchase'], axis=1).dropna()
-y_train = train[['Purchase']].dropna()
-
-X_test = test.drop(['Purchase'], axis=1).dropna()
-y_test = test[['Purchase']].dropna()
-
 model = DecisionTreeClassifier(random_state=1, criterion='gini')
 model.fit(X_train, y_train)
-
+y_pred = model.predict(X_train)
+mean_squared_error(y_train, y_pred)
+#0.01
 
 # iii. Create a plot of the tree The plot is a mess, isn’t it? For the purposes of this
 # question, fit another tree with the max_depth parameter set to 3 in order to get an
@@ -183,10 +166,10 @@ plt.show()
 
 # how many terminal nodes: 8
 # pick one and interpret the results
-# X[16] <=3.5
-# gini = 0.435
-# samples = 25
-# value = [8, 17]
+# X[8] <=0.051
+# gini = 0.198
+# samples = 171
+# value = [152, 19] 8 coded 1 (purchase), 17 coded 0(not purchase)
 
 
 # iv. Predict the response on the test data, and produce a confusion matrix comparing
@@ -197,49 +180,92 @@ cm = confusion_matrix(y_test, y_predict)
 heat_map(cm)
 
 print('\nTest error rate: ', 1 - accuracy_score(y_test, y_predict))
-# 0.255
+# 0.185
 
 # v. Determine the optimal tree size by tuning the ccp_alpha argument in scikit-
 # learn’s DecisionTreeClassifier You can use GridSearchCV for this pur-
 # pose.
-#
-tree_size = np.arange(2,20)
-print(tree_size)
-parameters = {'max_depth': tree_size}
+
+alpha_param = (10**np.linspace(start=-2, stop=-.5, num=100))
+parameters = {'ccp_alpha': alpha_param}
 cv_tree = GridSearchCV(model, parameters)
-cv_tree.fit(X, y)
+cv_tree.fit(X_train, y_train)
 
 
 cv_scores = []
 for mean_score in zip(cv_tree.cv_results_["mean_test_score"]):
     cv_scores.append(mean_score[0])
-print(cv_scores)
+print(max(cv_scores))
+cv_tree.best_params_
+# max cv: 0.811
+#ccp_alpha: 0.01
+
 
 # vi. Produce a plot with tree size on the x-axis and cross-validated classification error
 # rate on the y-axis calculated using the method in the previous question. Which tree
 # size corresponds to the lowest cross-validated classification error rate?
 #
-plt.figure(figsize=(10,8))
-sns.lineplot(x=tree_size, y=cv_scores)
-plt.xlabel("Tree size", fontsize= 16)
 
+tree_size = []
+for i in alpha_param:
+    model = DecisionTreeClassifier(ccp_alpha=i)
+    model_fit = model.fit(X_train, y_train)
+    tree_size.append(model_fit.get_n_leaves())
+  
+tree_size[cv_scores.index(max(cv_scores))]
+# optimal tree size is 5
+
+error = [1-i for i in cv_scores]
+plt.figure(figsize=(10,8))
+sns.lineplot(x=tree_size, y=error)
+plt.xlabel("Tree size", fontsize= 16)
 
 # vii. Produce a pruned tree corresponding to the optimal tree size obtained using cross-
 # validation. If cross-validation does not lead to selection of a pruned tree, then
 # create a pruned tree with five terminal nodes.
 #
 
+# pruned tree
+model = DecisionTreeClassifier(ccp_alpha=0.01)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
 
 
 # viii. Compare the training error rates between the pruned and unpruned trees. Which is
 # higher? Briefly explain.
-#
+model = DecisionTreeClassifier(ccp_alpha=0.01)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_train)
+mean_squared_error(y_train, y_pred)
+# pruned train error: 0.166
 
+model = DecisionTreeClassifier()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_train)
+mean_squared_error(y_train, y_pred)
+# 0.01
+
+# the error rate is higher for our pruned tree while our unpruned tree has a very 
+# low training error. This has a low training error meaning it has been overfitted
 
 
 # ix. Compare the test error rates between the pruned and unpruned trees. Which is
 # higher? Briefly explain.
+model = DecisionTreeClassifier(ccp_alpha=0.01)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+mean_squared_error(y_test, y_pred)
+# pruned test error: 0.181
 
+model = DecisionTreeClassifier()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+mean_squared_error(y_test, y_pred)
+# 0.244
+
+# looking at the test error, the unpruned tree has a higher test error than
+# the pruned model. having a high test error again corresponds with overfitting
+# which can happen when we don't use the ideal number of nodes
 
 
 
