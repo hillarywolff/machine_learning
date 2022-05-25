@@ -90,11 +90,6 @@ print(grid_search_pls.best_params_)
 
 # M=10, MSE=1406884.07
 
-pls = PLSRegression(n_components=9)
-pls.fit(X_train, y_train)
-
-mean_squared_error(y_test, pls.predict(X_test))
-# MSE = 1420360.40
 
 
 # g. comment on the results obtained. how accurrately can we predict the number
@@ -141,11 +136,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.252, random
 # ii. Fit a full, unpruned tree to the training data, with Purchase as the response and the
 # other variables as predictors. What is the training error rate?
 
-model = DecisionTreeClassifier(random_state=1, criterion='gini')
+model = DecisionTreeClassifier(random_state=37, criterion='gini')
 model.fit(X_train, y_train)
 y_pred = model.predict(X_train)
 mean_squared_error(y_train, y_pred)
-#0.01
+# 0.01
 
 # iii. Create a plot of the tree The plot is a mess, isn’t it? For the purposes of this
 # question, fit another tree with the max_depth parameter set to 3 in order to get an
@@ -166,10 +161,12 @@ plt.show()
 
 # how many terminal nodes: 8
 # pick one and interpret the results
-# X[8] <=0.051
-# gini = 0.198
-# samples = 171
-# value = [152, 19] 8 coded 1 (purchase), 17 coded 0(not purchase)
+
+# gini = 0.206. this gini coefficient tells us that the points within this 
+# node are fairly equally distributed, since the closer to 0 the more equal
+# the distribution
+# samples = 17. this branch has 17 data points that fall into it from our dataset
+# value = [15, 2] 15 coded 1 (purchase), 2 coded 0(not purchase)
 
 
 # iv. Predict the response on the test data, and produce a confusion matrix comparing
@@ -190,30 +187,27 @@ alpha_param = (10**np.linspace(start=-2, stop=-.5, num=100))
 parameters = {'ccp_alpha': alpha_param}
 cv_tree = GridSearchCV(model, parameters)
 cv_tree.fit(X_train, y_train)
+alpha = cv_tree.best_params_['ccp_alpha']
 
+model = DecisionTreeClassifier(ccp_alpha=alpha)
+model.fit(X_train, y_train)
+print(model.get_n_leaves())
 
-cv_scores = []
-for mean_score in zip(cv_tree.cv_results_["mean_test_score"]):
-    cv_scores.append(mean_score[0])
-print(max(cv_scores))
-cv_tree.best_params_
-# max cv: 0.811
-#ccp_alpha: 0.01
-
+# optimal tree size is 5
 
 # vi. Produce a plot with tree size on the x-axis and cross-validated classification error
 # rate on the y-axis calculated using the method in the previous question. Which tree
 # size corresponds to the lowest cross-validated classification error rate?
 #
-
 tree_size = []
 for i in alpha_param:
     model = DecisionTreeClassifier(ccp_alpha=i)
     model_fit = model.fit(X_train, y_train)
     tree_size.append(model_fit.get_n_leaves())
-  
-tree_size[cv_scores.index(max(cv_scores))]
-# optimal tree size is 5
+    
+cv_scores = []
+for mean_score in zip(cv_tree.cv_results_["mean_test_score"]):
+    cv_scores.append(mean_score[0]) 
 
 error = [1-i for i in cv_scores]
 plt.figure(figsize=(10,8))
@@ -226,24 +220,21 @@ plt.xlabel("Tree size", fontsize= 16)
 #
 
 # pruned tree
-model = DecisionTreeClassifier(ccp_alpha=0.01)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-
-
-# viii. Compare the training error rates between the pruned and unpruned trees. Which is
-# higher? Briefly explain.
-model = DecisionTreeClassifier(ccp_alpha=0.01)
+model = DecisionTreeClassifier(max_depth = 5, ccp_alpha=alpha)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_train)
 mean_squared_error(y_train, y_pred)
 # pruned train error: 0.166
 
+# viii. Compare the training error rates between the pruned and unpruned trees. Which is
+# higher? Briefly explain.
+
+# unpruned tree
 model = DecisionTreeClassifier()
 model.fit(X_train, y_train)
 y_pred = model.predict(X_train)
 mean_squared_error(y_train, y_pred)
-# 0.01
+# unpruned error: 0.01
 
 # the error rate is higher for our pruned tree while our unpruned tree has a very 
 # low training error. This has a low training error meaning it has been overfitted
@@ -251,17 +242,20 @@ mean_squared_error(y_train, y_pred)
 
 # ix. Compare the test error rates between the pruned and unpruned trees. Which is
 # higher? Briefly explain.
-model = DecisionTreeClassifier(ccp_alpha=0.01)
+# pruned tree
+model = DecisionTreeClassifier(max_depth = 5, ccp_alpha=alpha)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 mean_squared_error(y_test, y_pred)
 # pruned test error: 0.181
 
+
+# unpruned tree
 model = DecisionTreeClassifier()
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 mean_squared_error(y_test, y_pred)
-# 0.244
+# unpruned error: 0.262
 
 # looking at the test error, the unpruned tree has a higher test error than
 # the pruned model. having a high test error again corresponds with overfitting
